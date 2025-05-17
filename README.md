@@ -52,3 +52,10 @@ export default tseslint.config({
   },
 })
 ```
+
+
+After vite starter:
+
+npm install -D tailwindcss@3.4.1 postcss@8 autoprefixer@10
+
+
