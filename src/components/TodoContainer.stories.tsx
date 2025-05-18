@@ -96,26 +96,32 @@ export const SortTodos: Story = {
     const canvas = within(canvasElement);
 
     const input = canvas.getByPlaceholderText("Add a new todo...");
-    const addButton = canvas.getByRole("button", { name: /add/i });
+    const addButton = canvas.getByRole("button", { name: /^add$/i });
 
-    // Add in reverse order
+    // Add todos
     await userEvent.type(input, "Buy milk");
     await userEvent.click(addButton);
+
     await userEvent.type(input, "Do laundry{enter}");
 
-    const sortBtn = canvas.getByRole("button", { name: /Sort:/i });
+    // Find the sort toggle button (not the label)
+    const toggleSortButton = canvas.getByRole("button", { name: /toggle sort/i });
 
-    // Newest first => "Do laundry" should be first
+    // Newest first => "Do laundry" should be at the top
     await waitFor(() => {
       const items = canvas.getAllByRole("listitem");
-      expect(within(items[0]).getByText(/Do laundry/)).toBeInTheDocument();
+      const firstText = within(items[0]).getByText("Do laundry");
+      expect(firstText).toBeInTheDocument();
     });
 
-    // Toggle sort => "Buy milk" should now be first
-    await userEvent.click(sortBtn);
+    // Click toggle => should now be ascending: "Buy milk" comes first
+    await userEvent.click(toggleSortButton);
+
     await waitFor(() => {
       const items = canvas.getAllByRole("listitem");
-      expect(within(items[0]).getByText(/Buy milk/)).toBeInTheDocument();
+      const firstText = within(items[0]).getByText("Buy milk");
+      expect(firstText).toBeInTheDocument();
     });
   },
 };
+
