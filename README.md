@@ -2,6 +2,8 @@
 
 **Note**: This might be a good starting point for your own projects. Give it a go.
 
+Integrates with local storage for persistence.
+
 # Setup
 
 1. Install Node.js 22+
