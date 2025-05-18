@@ -14,79 +14,108 @@ export default meta;
 
 type Story = StoryObj<typeof TodoAppContainer>;
 
-export const Default: Story = {
+export const AddTodos: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-
     const input = canvas.getByPlaceholderText("Add a new todo...");
     const addButton = canvas.getByRole("button", { name: /add/i });
 
-    // Add "Buy milk"
-    await userEvent.clear(input);
     await userEvent.type(input, "Buy milk");
     await userEvent.click(addButton);
     await waitFor(() => {
       expect(canvas.getByText("Buy milk")).toBeInTheDocument();
     });
 
-    // Add "Do laundry"
     await userEvent.type(input, "Do laundry{enter}");
     await waitFor(() => {
       expect(canvas.getByText("Do laundry")).toBeInTheDocument();
     });
+  },
+};
 
-    // Mark "Buy milk" as completed
-    const buyMilkCheckbox = canvas.getByLabelText("Toggle Buy milk");
-    const doLaundryCheckbox = canvas.getByLabelText("Toggle Do laundry");
+export const ToggleCompletion: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Add todos
+    const input = canvas.getByPlaceholderText("Add a new todo...");
+    const addButton = canvas.getByRole("button", { name: /add/i });
+    await userEvent.type(input, "Buy milk");
+    await userEvent.click(addButton);
+    await userEvent.type(input, "Do laundry{enter}");
+
+    // Toggle "Buy milk"
+    const buyMilkCheckbox = await canvas.findByLabelText("Toggle Buy milk");
+    const doLaundryCheckbox = await canvas.findByLabelText("Toggle Do laundry");
     await userEvent.click(buyMilkCheckbox);
 
     await waitFor(() => {
       expect(buyMilkCheckbox).toBeChecked();
       expect(doLaundryCheckbox).not.toBeChecked();
     });
+  },
+};
 
-    // --- FILTER TESTS ---
-    const allBtn = canvas.getByRole("button", { name: /All/i });
-    const activeBtn = canvas.getByRole("button", { name: /Active/i });
-    const completedBtn = canvas.getByRole("button", { name: /Completed/i });
+export const FilterTodos: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-    // Show only active tasks
-    await userEvent.click(activeBtn);
+    // Add and toggle
+    const input = canvas.getByPlaceholderText("Add a new todo...");
+    const addButton = canvas.getByRole("button", { name: /add/i });
+    await userEvent.type(input, "Buy milk");
+    await userEvent.click(addButton);
+    await userEvent.type(input, "Do laundry{enter}");
+    await userEvent.click(canvas.getByLabelText("Toggle Buy milk"));
+
+    // Click Active
+    await userEvent.click(canvas.getByRole("button", { name: /Active/i }));
     await waitFor(() => {
       expect(canvas.queryByText("Buy milk")).not.toBeInTheDocument();
       expect(canvas.getByText("Do laundry")).toBeInTheDocument();
     });
 
-    // Show only completed tasks
-    await userEvent.click(completedBtn);
+    // Click Completed
+    await userEvent.click(canvas.getByRole("button", { name: /Completed/i }));
     await waitFor(() => {
       expect(canvas.queryByText("Do laundry")).not.toBeInTheDocument();
       expect(canvas.getByText("Buy milk")).toBeInTheDocument();
     });
 
-    // Show all tasks
-    await userEvent.click(allBtn);
+    // Click All
+    await userEvent.click(canvas.getByRole("button", { name: /All/i }));
     await waitFor(() => {
       expect(canvas.getByText("Buy milk")).toBeInTheDocument();
       expect(canvas.getByText("Do laundry")).toBeInTheDocument();
     });
+  },
+};
 
-    // --- SORTING TESTS ---
+export const SortTodos: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const input = canvas.getByPlaceholderText("Add a new todo...");
+    const addButton = canvas.getByRole("button", { name: /add/i });
+
+    // Add in reverse order
+    await userEvent.type(input, "Buy milk");
+    await userEvent.click(addButton);
+    await userEvent.type(input, "Do laundry{enter}");
+
     const sortBtn = canvas.getByRole("button", { name: /Sort:/i });
 
-    // Default is "Newest First" => "Do laundry" first
+    // Newest first => "Do laundry" should be first
     await waitFor(() => {
       const items = canvas.getAllByRole("listitem");
-      const firstText = within(items[0]).getByText(/Do laundry/).textContent;
-      expect(firstText).toContain("Do laundry");
+      expect(within(items[0]).getByText(/Do laundry/)).toBeInTheDocument();
     });
 
-    // Toggle to ascending (oldest first) => "Buy milk" should now be first
+    // Toggle sort => "Buy milk" should now be first
     await userEvent.click(sortBtn);
     await waitFor(() => {
       const items = canvas.getAllByRole("listitem");
-      const firstText = within(items[0]).getByText(/Buy milk/).textContent;
-      expect(firstText).toContain("Buy milk");
+      expect(within(items[0]).getByText(/Buy milk/)).toBeInTheDocument();
     });
   },
 };

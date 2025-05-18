@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test:storybook": "test-storybook",
+    "test:e2e": "start-server-and-test dev http://localhost:5173 test:playwright",
+    "test:playwright": "playwright test"
   },
   "dependencies": {
     "@storybook/testing-library": "^0.2.1",
@@ -19,6 +22,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^3.2.6",
     "@eslint/js": "^9.27.0",
+    "@playwright/test": "^1.52.0",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-onboarding": "^8.6.14",
     "@storybook/blocks": "^8.6.14",
@@ -26,6 +30,7 @@
     "@storybook/react": "^8.6.14",
     "@storybook/react-vite": "^8.6.14",
     "@storybook/test": "^8.6.14",
+    "@storybook/test-runner": "^0.22.0",
     "@types/node": "^22.15.18",
     "@types/react": "^18.1.2",
     "@types/react-dom": "^18.1.2",
@@ -41,6 +46,7 @@
     "globals": "^16.1.0",
     "playwright": "^1.52.0",
     "postcss": "^8.5.3",
+    "start-server-and-test": "^2.0.12",
     "storybook": "^8.6.14",
     "tailwindcss": "^3.4.1",
     "typescript": "~5.8.3",
