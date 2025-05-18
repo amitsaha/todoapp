@@ -3,6 +3,7 @@
 **Note**: This might be a good starting point for your own projects. Give it a go.
 
 ![Screenshot](./Screenshot%202025-05-18%20at%2017-40-34%20Vite%20React%20TS.png)
+
 Integrates with local storage for persistence.
 
 # Setup
