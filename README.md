@@ -1,12 +1,12 @@
-# React + TypeScript + Vite + TailwindCSS based TodoApp
+# React 18 + TypeScript + Vite + TailwindCSS based TodoApp
 
 **Note**: This might be a good starting point for your own projects. Give it a go.
 
 # Setup
 
 1. Install Node.js 22+
-2. npm install
-3. npx playwright install
+2. `npm install`
+3. `npx playwright install`
 
 
 ## Run dev server
@@ -15,6 +15,7 @@
 
 ## Storybook for component driven design
 
+[Storybook](https://storybook.js.org/)
 Start storybook server:
 
 `npm run storybook`
@@ -26,6 +27,8 @@ npm run test:storybook
 ```
 
 ## playwright tests
+
+[Playright](https://playwright.dev/)
 
 `npm run test:e2e`
 
