@@ -3,21 +3,41 @@ import { TodoDisplay } from "./TodoDisplay";
 import type { todo } from "../model/todo";
 
 const LOCAL_STORAGE_KEY = "todos";
+const FILTER_KEY = "todo_filter";
+const SORT_ORDER_KEY = "todo_sort_order";
+const isTesting = import.meta.env.STORYBOOK === "true";
 
-const isTesting = import.meta.env.STORYBOOK === "true"; // Set in `.storybook/preview.ts`
-
-const saveTodosToLocalStorage = (todos: todo[]) => {
+const saveToStorage = (key: string, value: any) => {
   if (!isTesting) {
-    localStorage.setItem("todos", JSON.stringify(todos));
+    localStorage.setItem(key, JSON.stringify(value));
   }
 };
 
+const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
+  if (!isTesting) {
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      try {
+        return JSON.parse(stored) as T;
+      } catch {
+        return defaultValue;
+      }
+    }
+  }
+  return defaultValue;
+};
 
 const TodoAppContainer = () => {
   const [description, setDescription] = useState("");
   const [todos, setTodos] = useState<todo[]>([]);
+  const [filter, setFilter] = useState<"all" | "completed" | "active">(() =>
+    loadFromStorage(FILTER_KEY, "all")
+  );
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() =>
+    loadFromStorage(SORT_ORDER_KEY, "desc")
+  );
 
-  // Load from localStorage
+  // Load todos
   useEffect(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (stored) {
@@ -30,17 +50,26 @@ const TodoAppContainer = () => {
     }
   }, []);
 
-  // Save to localStorage whenever todos change
+  // Save filter and sortOrder when changed
+  useEffect(() => {
+    saveToStorage(FILTER_KEY, filter);
+  }, [filter]);
+
+  useEffect(() => {
+    saveToStorage(SORT_ORDER_KEY, sortOrder);
+  }, [sortOrder]);
+
   const updateTodoById = (id: string, updater: (todo: todo) => todo) => {
     const updated = todos.map((t) => (t.id === id ? updater(t) : t));
     setTodos(updated);
-    saveTodosToLocalStorage(updated);
+    saveToStorage(LOCAL_STORAGE_KEY, updated);
   };
+ 
 
   const handleAddTodo = () => {
     const trimmed = description.trim();
     if (!trimmed) return;
-
+  
     const now = new Date();
     const newTodo: todo = {
       id: crypto.randomUUID(),
@@ -49,11 +78,13 @@ const TodoAppContainer = () => {
       createdAt: now,
       updatedAt: now,
     };
-
-    setTodos([newTodo, ...todos]);
-    saveTodosToLocalStorage([newTodo, ...todos]);
+  
+    const newTodos = [newTodo, ...todos];
+    setTodos(newTodos);
+    saveToStorage(LOCAL_STORAGE_KEY, newTodos);
     setDescription("");
   };
+  
 
   const handleToggleComplete = (id: string) => {
     updateTodoById(id, (todo) => ({
@@ -62,17 +93,32 @@ const TodoAppContainer = () => {
       updatedAt: new Date(),
     }));
   };
+ 
 
   const handleDelete = (id: string) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-    saveTodosToLocalStorage(todos.filter((todo) => todo.id !== id));
+    const updated = todos.filter((todo) => todo.id !== id);
+    setTodos(updated);
+    saveToStorage(LOCAL_STORAGE_KEY, updated);
   };
+  
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleAddTodo();
     }
   };
+
+  const filteredTodos = todos
+    .filter((t) => {
+      if (filter === "completed") return t.completed;
+      if (filter === "active") return !t.completed;
+      return true;
+    })
+    .sort((a, b) =>
+      sortOrder === "asc"
+        ? a.createdAt.getTime() - b.createdAt.getTime()
+        : b.createdAt.getTime() - a.createdAt.getTime()
+    );
 
   return (
     <div className="max-w-md mx-auto mt-10 p-4 bg-white shadow-lg rounded-2xl">
@@ -95,10 +141,38 @@ const TodoAppContainer = () => {
           Add
         </button>
       </div>
-      <TodoDisplay 
-        handleDelete={handleDelete} 
-        handleToggleComplete={handleToggleComplete} 
-        todos={todos} 
+
+      {/* Filter + Sort Controls */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-2">
+          {["all", "active", "completed"].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f as any)}
+              className={`px-3 py-1 rounded-lg text-sm ${
+                filter === f
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {f[0].toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() =>
+            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+          }
+          className="text-sm text-blue-600 hover:underline"
+        >
+          Sort: {sortOrder === "asc" ? "Oldest First" : "Newest First"}
+        </button>
+      </div>
+
+      <TodoDisplay
+        handleDelete={handleDelete}
+        handleToggleComplete={handleToggleComplete}
+        todos={filteredTodos}
       />
     </div>
   );
