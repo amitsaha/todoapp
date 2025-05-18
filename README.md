@@ -2,6 +2,7 @@
 
 **Note**: This might be a good starting point for your own projects. Give it a go.
 
+![Screenshot](./Screenshot 2025-05-18 at 17-40-34 Vite React TS.png Screenshot)
 Integrates with local storage for persistence.
 
 # Setup
